@@ -1,3 +1,5 @@
+#!/bin/bash
+
 DISTRIBUTED_ARGS="
     --nproc_per_node 7 \
     --nnodes $NNODES \
