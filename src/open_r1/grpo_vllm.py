@@ -14,24 +14,22 @@
 
 import os
 import re
-from datetime import datetime
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Optional
 
 from datasets import load_dataset
-from transformers import Qwen2_5_VLForConditionalGeneration
-
 from math_verify import parse, verify
-from open_r1.trainer2_5_vllm import Qwen2VLGRPOTrainer
 from trl import GRPOConfig, GRPOTrainer, ModelConfig, ScriptArguments, TrlParser, get_peft_config
-import os
-# os.environ["WANDB_MODE"] = "disabled"
-import os
-import json
-os.environ["WANDB_MODE"] = "offline"  # 设置为离线模式
 
+from trainer.grpo_trainer_vllm import Qwen2VLGRPOTrainer
+
+os.environ["WANDB_MODE"] = "offline"
+
+import json
 import wandb
-wandb.init(project="R1multimodel", name="Qwen2_5_7B_R1multimodel")
+
+wandb.init(project="R1-multimodal", name="Qwen2_5_7B_R1-multimodal")
 
 
 @dataclass
@@ -79,20 +77,20 @@ def accuracy_reward(completions, solution, **kwargs):
                 # Extract answer from solution if it has think/answer tags
                 sol_match = re.search(r'<answer>(.*?)</answer>', sol)
                 ground_truth = sol_match.group(1).strip() if sol_match else sol.strip()
-                
+
                 # Extract answer from content if it has think/answer tags
                 content_match = re.search(r'<answer>(.*?)</answer>', content)
                 student_answer = content_match.group(1).strip() if content_match else content.strip()
-                
+
                 # Compare the extracted answers
                 if student_answer == ground_truth:
                     reward = 1.0
             except Exception:
                 pass  # Keep reward as 0.0 if both methods fail
-                
+
         rewards.append(reward)
         # if os.getenv("DEBUG_MODE") == "true":
-            # log_path = os.getenv("LOG_PATH")
+        # log_path = os.getenv("LOG_PATH")
         log_path = 'train_1.log'
         with open(log_path, "a") as f:
             try:
@@ -135,10 +133,10 @@ def main(script_args, training_args, model_args):
     # Format into conversation
     def make_conversation(example):
         return {
-            "prompt": [
+            "prompt": json.dumps([
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": example["problem"]},
-            ],
+            ])
         }
 
     def make_conversation_image(example):
@@ -157,7 +155,6 @@ def main(script_args, training_args, model_args):
 
     if "image" in dataset[script_args.dataset_train_split].features:
         dataset = dataset.map(make_conversation_image)
-        dataset = dataset.remove_columns(["original_question", "original_answer"])
     else:
         dataset = dataset.map(make_conversation)
         dataset = dataset.remove_columns("messages")
@@ -166,7 +163,6 @@ def main(script_args, training_args, model_args):
         trainer_cls = Qwen2VLGRPOTrainer
     else:
         trainer_cls = GRPOTrainer
-
 
     # Initialize the GRPO trainer
     trainer = trainer_cls(
@@ -194,8 +190,7 @@ if __name__ == "__main__":
     parser = TrlParser((GRPOScriptArguments, GRPOConfig, ModelConfig))
     script_args, training_args, model_args = parser.parse_args_and_config()
     training_args.save_steps = 100  # Save checkpoint every 100 steps
-    print('training_args:\n',training_args)
-    print('script_args:\n',script_args)
-    print('model_args:\n',model_args)
+    print('training_args:\n', training_args)
+    print('script_args:\n', script_args)
+    print('model_args:\n', model_args)
     main(script_args, training_args, model_args)
-
