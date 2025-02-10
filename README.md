@@ -4,12 +4,12 @@
 
 - Follow the instruction in https://github.com/FanqingM/R1-Multimodel-Journey
 - Update the transformers to the 4.49.0.dev0 to support the Qwen2.5_VL
-- `pip install vllm == 0.7.2 trl == 0.15.0.dev0` to support vllm
+- `pip install vllm == 0.7.2 trl == 0.15.0.dev0` to support vLLM
 
 **What we did**
 
-- Fix some bugs in [Open1-Multimodal](https://github.com/EvolvingLMMs-Lab/open-r1-multimodal) (such as function: get_per_token_logps)
-- Suppoprt VLLM to make the training process more faster (5-6x faster then OpenR1-MM)
+- Fix some bugs in [Open-R1-Multimodal](https://github.com/EvolvingLMMs-Lab/open-r1-multimodal) (such as function: get_per_token_logps)
+- Suppoprt vLLM to make the training process more faster (5-6x faster then OpenR1-MM)
 - Exploring the effectiveness of R1-like reinforcement learning (RL) on more challenging problems (geometry problems).
   - We use 20k samples from geo170k for now
 
@@ -26,7 +26,7 @@
   
   ```
 
-- VLMs seem to struggle to exhibit length increase patterns similar to LLMs. In our experiments, we tested various datasets but failed to replicate the length increase curve observed in Simple-RL. However, performance improvements were indeed observed through evaluation.
+- VLMs seem to struggle to exhibit length increase patterns similar to LLMs. In our experiments, we tested various datasets but failed to replicate the length increase curve observed in (simpleRL-reason)[https://github.com/hkust-nlp/simpleRL-reason]. However, performance improvements were indeed observed through evaluation.
 
 - Although R1's RL only provides rewards based on answer correctness, it still demonstrates higher data efficiency compared to SFT.  We compared the results on the mathvista-testmini set.
 
@@ -45,3 +45,7 @@
 - prepare the dataset follow the **local_scripts/gen_dataset.py**
 - sh local_scripts/train_qwen2_5_3b.sh
   - The default setting for vLLM uses `cuda:7` for generation while utilizing the remaining 7 nodes for training.
+
+**Acknowledgement**
+
+Our codebase builds upon [Open-R1-Multimodal](https://github.com/EvolvingLMMs-Lab/open-r1-multimodal) and integrates open-source contributions from [vLLM](https://github.com/vllm-project/vllm), [Open-R1](https://github.com/huggingface/open-r1), and [trl](https://github.com/huggingface/trl). We also extend our gratitude to [DeepSeek-R1](https://github.com/deepseek-ai/DeepSeek-R1) and [Qwen2.5-VL](https://github.com/QwenLM/Qwen2.5-VL) for their open-source techniques and base models, which have enabled us to further our exploration.
