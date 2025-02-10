@@ -1,15 +1,15 @@
-# R1-Mutlimodel-Journey
+# R1-Multimodal-Journey
 
 **Environment**
 
 - Follow the instruction in https://github.com/FanqingM/R1-Multimodel-Journey
-- update t he transformers to the 4.49.0.dev0 to support the Qwen2.5_VL
-- Pip vllm == 0.7.2  and trl == 0.15.0.dev0 to support vllm
+- Update the transformers to the 4.49.0.dev0 to support the Qwen2.5_VL
+- `pip install vllm == 0.7.2 trl == 0.15.0.dev0` to support vllm
 
 **What we did**
 
-- Fix some bugs in Openr1-Multimodel ( such as function: get_per_token_logps)
-- Suppoprt VLLM to make the training process more faster (5-6 faster then openr1-MM)
+- Fix some bugs in [Open1-Multimodal](https://github.com/EvolvingLMMs-Lab/open-r1-multimodal) (such as function: get_per_token_logps)
+- Suppoprt VLLM to make the training process more faster (5-6x faster then OpenR1-MM)
 - Exploring the effectiveness of R1-like reinforcement learning (RL) on more challenging problems (geometry problems).
   - We use 20k samples from geo170k for now
 
@@ -28,7 +28,7 @@
 
 - VLMs seem to struggle to exhibit length increase patterns similar to LLMs. In our experiments, we tested various datasets but failed to replicate the length increase curve observed in Simple-RL. However, performance improvements were indeed observed through evaluation.
 
-- Although R1's RL only provides rewards based on answer correctness, it still demonstrates higher data efficiency compared to SFT.  We compared the results on the mathvista testmini set.
+- Although R1's RL only provides rewards based on answer correctness, it still demonstrates higher data efficiency compared to SFT.  We compared the results on the mathvista-testmini set.
 
   ![image-20250210235340428](./result.png)
 

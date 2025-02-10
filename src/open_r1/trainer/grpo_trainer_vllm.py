@@ -357,7 +357,9 @@ class Qwen2VLGRPOTrainer(Trainer):
                     enable_prefix_caching=True,
                 )
                 self.sampling_params = SamplingParams(
-                    temperature=0.7,
+                    temperature=0.9,
+                    top_p=0.9,
+                    top_k=50,
                     max_tokens=self.max_completion_length,
                 )
 
