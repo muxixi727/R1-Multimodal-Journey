@@ -1,104 +1,47 @@
-# Multimodal Open R1
+# R1-Mutlimodel-Journey
 
-We conducted a speed-run on to investigate R1's paradigm in multimodal models after observing growing interest in R1 and studying the elegant implementation of the GRPO algorithm in `open-r1` and `trl`.
+**Environment**
 
-[🤗 Models](https://huggingface.co/lmms-lab/Qwen2-VL-2B-GRPO-8k) | [🤗 Datasets](https://huggingface.co/datasets/lmms-lab/multimodal-open-r1-8k-verified) | [Wandb Logs](https://api.wandb.ai/links/libo0013/lz60ml8h)
+- Follow the instruction in https://github.com/FanqingM/R1-Multimodel-Journey
+- update t he transformers to the 4.49.0.dev0 to support the Qwen2.5_VL
+- Pip vllm == 0.7.2  and trl == 0.15.0.dev0 to support vllm
 
-> [!NOTE] 
-> Although our insights may not be guaranteed to be correct, we commit to sharing them truthfully and honestly. We welcome community feedback and discussions to improve our understanding on multimodal reasoning models. We will PR to `open-r1` later to better support community study on multimodal RL.
+**What we did**
 
-![alt text](assets/lmm_r1.png)
+- Fix some bugs in Openr1-Multimodel ( such as function: get_per_token_logps)
+- Suppoprt VLLM to make the training process more faster (5-6 faster then openr1-MM)
+- Exploring the effectiveness of R1-like reinforcement learning (RL) on more challenging problems (geometry problems).
+  - We use 20k samples from geo170k for now
 
-**What We Did**
-- Implemented Multimodal R1 based on [huggingface/open-r1](https://github.com/huggingface/open-r1) and [deepseek-ai/DeepSeek-R1](https://github.com/deepseek-ai/DeepSeek-R1). 
-  - Integrated Qwen2-VL series, Aria-MoE, and other VLMs available in `transformers`.
-- Open-sourced the first batch of `8k` multimodal RL training examples focused on Math reasoning. The data is created by GPT4o with reasoning paths and verifiable answers, based on `Math360K` and `Geo170K`. We provide a [script](local_scripts/create_vision_cot_data.py) for users to inspect and create their own data.
-  - The dataset is available in [lmms-lab/multimodal-open-r1-8k-verified](https://huggingface.co/datasets/lmms-lab/multimodal-open-r1-8k-verified).
-- Open-sourced models trained with GRPO.
-  - The models are available in [lmms-lab/Qwen2-VL-2B-GRPO-8k](https://huggingface.co/lmms-lab/Qwen2-VL-2B-GRPO-8k) | [lmms-lab/Qwen2-VL-7B-GRPO-8k](https://huggingface.co/lmms-lab/Qwen2-VL-7B-GRPO-8k).
+**Some Findings**
 
-**Insights and Future Plans**
-- Multiple-choice option verification is necessary since many math multimodal problems are MCQs. Discussed in [issue#56](https://github.com/huggingface/open-r1/issues/56) and we customize the verification logic in [src/open_r1/grpo.py](src/open_r1/grpo.py).
-- Need to curate RL data to be verifiable, requiring further exploration on effectively converting existing data into RL data and validating GPT4o's curation reliability.
-- Current framework is not efficient for large-scale training. Qwen2-VL-2B model takes `10 hours` to train `1 epoch` on `8 H100 GPUs` for `8k samples`. So it's necessary to investigate how to efficiently scale up the training.
-- Our init model (Qwen2-VL-2/7B-Instruct) do not show good reasoning ability in our experiments, and during training, the model quickly gather rewards from `format` but not `accuracy`, which is not a good sign for whole RL training. We release our [wandb logs](https://api.wandb.ai/links/libo0013/lz60ml8h) for reference.
+-  The "aha moment" can emerge even at the very beginning of training, even for a model as small as 3B and in the instruct model setting.
 
-  ![image](https://github.com/user-attachments/assets/e0cfca59-3403-4776-97e9-090f2972b903)
+  Here is a sample when we just training within 10 steps
 
-- The community may need to curate better multimodal dataset for RL training. Current dataset is limited to math scenarios since it has verifiable answers. It's unclear how to expand the RL dataset to other general domains with open-ended answer. We welcome community feedback on our current strategy and plan to release a larger dataset if we get clear scaling insights through community discussions.
+  ```
+  Content: <think> In the second quadrant, the x-coordinate is negative and the y-coordinate is positive. The cosine of an angle in a right triangle is equal to the adjacent side over the hypotenuse. Since the cosine of $\alpha$ is $-\frac{3}{5}$, we can determine that the adjacent side (which is the x-coordinate) is $-3$ (since the hypotenuse is 1 for the unit circle). The hypotenuse is always 1, so the radius of the circle is 1. Using the Pythagorean theorem, we can find the y-coordinate (the opposite side), which is $y = \sqrt{1^2 - (-3)^2} = \sqrt{1 - 9} = \sqrt{-8}$. 
+  *****This gives us a complex number, indicating that there was a mistake in the initial assumption that we could solve for the y-coordinate directly from the cosine value without considering the unit circle and the quadrant.*****
+  Since $\cos \alpha = -\frac{3}{5}$ in the second quadrant, and knowing that $\cos^2 \alpha + \sin^2 \alpha = 1$, we can find $\sin \alpha$. $\sin \alpha = \sqrt{1 - \cos^2 \alpha} = \sqrt{1 - (-\frac{3}{5})^2} = \sqrt{1 - \frac{9}{25}} = \sqrt{\frac{16}{25}} = \frac{4}{5}$. Therefore, the coordinates of point A are $(-\frac{3}{5}, \frac{4}{5})$. </think><answer> The coordinates of point $A$ are $(-\frac{3}{5}, \frac{4}{5})$.
+  
+  ```
 
+- VLMs seem to struggle to exhibit length increase patterns similar to LLMs. In our experiments, we tested various datasets but failed to replicate the length increase curve observed in Simple-RL. However, performance improvements were indeed observed through evaluation.
 
-## Training Models
+- Although R1's RL only provides rewards based on answer correctness, it still demonstrates higher data efficiency compared to SFT.  We compared the results on the mathvista testmini set.
 
-> [!NOTE]
-> The training commands below are configured for a node of 8 x H100s (80GB). For different hardware and topologies, you may need to tune the batch size and number of gradient accumulation steps.
+  ![image-20250210235340428](/Users/fanqing_m/Library/Application Support/typora-user-images/image-20250210235340428.png)
 
-### GRPO on Qwen2-VL-2/7B
+- We believe that the reason why VLM is difficult to achieve an R1 moment similar to LLM is the lack of high-quality data. Currently, multimodal reasoning data is significantly scarcer than language data. This makes it difficult for the model to show length growth on simple datasets such as geo170k, and it is easy to overfit.
 
-To run GRPO on Qwen2-VL-2B:
+  <img src="/Users/fanqing_m/Library/Application Support/typora-user-images/image-20250210235559468.png" alt="image-20250210235559468" style="zoom:50%;" />
 
-```
-cd /home/tiger/multimodal-open-r1
-# pip3 install vllm==0.6.6.post1
-pip3 install -e ".[dev]"
+- We found that the slow speed of Openr1-Multimodel was due to slow generation, causing other processes to wait. To address this, we replaced it with vLLM, significantly reducing training time.
 
-pip3 install wandb==0.18.3
+  <img src="/Users/fanqing_m/Library/Application Support/typora-user-images/image-20250211000441795.png" alt="image-20250211000441795" style="zoom:50%;" />
 
-torchrun --nproc_per_node="${ARNOLD_WORKER_GPU}" \ # 8
-    --nnodes="${ARNOLD_WORKER_NUM}" \ # 1
-    --node_rank="${ARNOLD_ID}" \ # 0
-    --master_addr="${METIS_WORKER_0_HOST}" \ # 127.0.0.1
-    --master_port="${port_in_cmd}" \ # 12345
-    src/open_r1/grpo.py \
-    --deepspeed scripts/zero3.json \
-    --output_dir checkpoints/Qwen2-VL-2B-GRPO-8k \
-    --model_name_or_path Qwen/Qwen2-VL-2B-Instruct \
-    --dataset_name lmms-lab/multimodal-open-r1-8k-verified \
-    --max_prompt_length 8192 \
-    --per_device_train_batch_size 1 \
-    --gradient_accumulation_steps 1 \
-    --logging_steps 1 \
-    --bf16 \
-    --report_to wandb \
-    --gradient_checkpointing true \
-    --attn_implementation flash_attention_2 \
-    --max_pixels 2359296 \
-    --save_total_limit 8 \
-    --num_train_epochs 1 \
-    --run_name Qwen2-VL-2B-GRPO-8k
-```
+**How to train**
 
-Please refer to [local_scripts/train_qwen2_vl.sh](local_scripts/train_qwen2_vl.sh) for more details.
-
-Above scripts are naively for `multi-gpu/multi-node` training.
-
-### Reasoning matters for evaluation
-
-Many benchmarks, such as MMMU and AI2D, require the model to directly output an answer without providing reasoning steps. This raises a critical issue for evaluation: does the model truly understand how to derive the answer or is it just guessing or relying on memorization? To address this, we require the model to first generate its reasoning steps before providing the final answer. We then use GPT-4o to extract and score the responses.
-
-We tested the original Qwen2-VL-2B-Instruct and Qwen2-VL-7B-Instruct models and observed that their scores decreased on certain benchmarks when reasoning steps were included. Subsequently, we compared the scores of our model using the same evaluation method. Our model performed better under the reasoning-based chain-of-thought (CoT) setting. We attribute this improvement to our model’s training on GRPO, which appears to enhance its ability to handle reasoning formats and consequently achieve higher scores.
-
-| Benchmarks     | Qwen2-VL-2B-Instruct(w.o reasoning) | Qwen2-VL-2B-Instruct(w. reasoning) | Qwen2-VL-2B-GRPO-8k(w. reasoning) | Qwen2-VL-7B-Instruct(w.o reasoning) | Qwen2-VL-7B-Instruct(w. reasoning) | Qwen2-VL-7B-GRPO-8k(w. reasoning) |
-|----------------|-------------------------------------|------------------------------------|-----------------------------------|-------------------------------------|------------------------------------|-----------------------------------|
-| MMMU           | 39.7                                | 31.2                               | 35.22                             | 50.8                                | 41.9                               | 49.4                              |
-| Mathvista-mini | 51.6                                | 48.6                               | 49.4                              | 57.1                                | 60.9                               | 60.6                              |
-
-In our logs, we sometimes find out that the model still just outputing the answer with our the reasoning steps (even for our trained models). We believe that this could because the model are not familiar with the reasoning steps and can't decide how to generate it.
-
-### Evaluating models
-
-We use [lmms-eval]([https://github.com/LMMs-Lab/lmms-eval](https://github.com/EvolvingLMMs-Lab/lmms-eval)) to evaluate models, please run:
-
-```shell
-bash local_scripts/lmms_eval_qwen2vl.sh
-```
-
-To reproduce our result on the above benchmarks, please checkout to the `dev/qwen_cot` branch.
-
-Visual reasoning task evaluation currently are limited in direct answer format and simple parsing logic. Tasks like `mmmu_val`, `mathvista_testmini`, and `mmmu_pro` expect direct answers rather than reasoning traces, and the current parsing logic cannot process step-by-step reasoning. We are actively working on improving this limitation and welcome community contributions to develop a more comprehensive evaluation framework for visual reasoning models.
-
-### RL Data Generation
-
-We provide the first batch of `8k` multimodal RL training examples focused on Math reasoning. The data is generated by GPT4o. We provide the [script](local_scripts/create_vision_cot_data.py) to users to inspect and create their own data.
-
-Users can view data in [lmms-lab/multimodal-open-r1-8k-verified](https://huggingface.co/datasets/lmms-lab/multimodal-open-r1-8k-verified). The problem/solution are generated by GPT4o with reasoning path and verifiable answer. The `original question`/`original answer` are from the original dataset.
+- prepare the dataset follow the **local_scripts/gen_dataset.py**
+- sh local_scripts/train_qwen2_5_3b.sh
+  - The default setting for vLLM uses `cuda:7` for generation while utilizing the remaining 7 nodes for training.
