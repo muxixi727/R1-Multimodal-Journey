@@ -30,15 +30,15 @@
 
 - Although R1's RL only provides rewards based on answer correctness, it still demonstrates higher data efficiency compared to SFT.  We compared the results on the mathvista testmini set.
 
-  ![image-20250210235340428](/Users/fanqing_m/Library/Application Support/typora-user-images/image-20250210235340428.png)
+  ![image-20250210235340428](./result.png)
 
 - We believe that the reason why VLM is difficult to achieve an R1 moment similar to LLM is the lack of high-quality data. Currently, multimodal reasoning data is significantly scarcer than language data. This makes it difficult for the model to show length growth on simple datasets such as geo170k, and it is easy to overfit.
 
-  <img src="/Users/fanqing_m/Library/Application Support/typora-user-images/image-20250210235559468.png" alt="image-20250210235559468" style="zoom:50%;" />
+  <img src="./log.png" alt="image-20250210235559468" style="zoom:50%;" />
 
 - We found that the slow speed of Openr1-Multimodel was due to slow generation, causing other processes to wait. To address this, we replaced it with vLLM, significantly reducing training time.
 
-  <img src="/Users/fanqing_m/Library/Application Support/typora-user-images/image-20250211000441795.png" alt="image-20250211000441795" style="zoom:50%;" />
+  <img src="./time.png" alt="image-20250211000441795" style="zoom:50%;" />
 
 **How to train**
 
