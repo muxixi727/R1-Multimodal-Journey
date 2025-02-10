@@ -36,7 +36,7 @@
 
   <img src="./log.png" alt="image-20250210235559468" style="zoom:50%;" />
 
-- We found that the slow speed of Openr1-Multimodel was due to slow generation, causing other processes to wait. To address this, we replaced it with vLLM, significantly reducing training time.
+- We found that the slow speed of Openr1-Multimodel was due to slow generation, causing other processes to wait. To address this, we replaced it with vLLM, significantly reducing training time (in 8H100 on 20k Geo170k samples).
 
   <img src="./time.png" alt="image-20250211000441795" style="zoom:50%;" />
 
