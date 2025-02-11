@@ -42,11 +42,12 @@
 
 **Data Preparation**
 
-- Modify necessary input/output paths in **local_scripts/train_qwen2_5_3b.sh**
-- Prepare the dataset using **local_scripts/gen_dataset.py**(unlike [Open-R1-Multimodal](https://github.com/EvolvingLMMs-Lab/open-r1-multimodal) that directly store the image in PIL format, we store image path(url or local path) to enable vLLM support)
+- Modify necessary input/output paths in **local_scripts/gen_dataset.py**
+- Prepare the dataset using **python local_scripts/gen_dataset.py**(unlike [Open-R1-Multimodal](https://github.com/EvolvingLMMs-Lab/open-r1-multimodal) that directly store the image in PIL format, we store image path(url or local path) to enable vLLM support)
 
 **Training**
 
+- Modify necessary input/output paths in **local_scripts/train_qwen2_5_3b.sh**
 - sh local_scripts/train_qwen2_5_3b.sh
   - The default setting for vLLM uses `cuda:7` for generation while utilizing the remaining 7 nodes for training.
 

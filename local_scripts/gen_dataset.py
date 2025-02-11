@@ -4,7 +4,7 @@ import random
 import re
 
 import pandas as pd
-from PIL import Image
+from PIL import Image as I
 from datasets import Dataset, Features, Value, Image
 from tqdm import tqdm
 
@@ -25,7 +25,7 @@ def format_math_explanation(text: str):
 
 def has_valid_image_size_from_path(image_path):
     try:
-        image = Image.open(image_path)
+        image = I.open(image_path)
         width, height = image.size
         return height >= 28 and width >= 28
     except Exception as e:
@@ -42,7 +42,7 @@ def read_jsonl(file_path):
     return data
 
 
-input_file = '/path/to/input.jsonl'
+input_file = 'local_scripts/qa_tuning_20k.json'
 
 data = {
     'image': [],
@@ -68,12 +68,12 @@ print('len(data_all_filtered): ', len(data_all_filtered))
 
 random.shuffle(data_all_filtered)
 for item in data_all_filtered:
-    image = os.path.join('/path/to/image/folder', item.get('image'))
+    image_path = os.path.join('/path/to/image/folder', item.get('image'))
     problem = item['question']
     solution = format_math_explanation(item['answer'])
 
-    data['image'].append(image)
-    data['image_path'].append(image)
+    data['image'].append(image_path)
+    data['image_path'].append(image_path)
     data['problem'].append(problem)
     data['solution'].append(solution)
 
@@ -88,7 +88,7 @@ features = Features({
 
 train_dataset = Dataset.from_pandas(df, features=features)
 
-train_save_path = "/path/to/save/train_dataset.parquet"
+train_save_path = "geo_data/train-00000-of-00001.parquet"
 
 train_dataset.to_parquet(train_save_path)
 
