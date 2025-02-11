@@ -40,11 +40,19 @@
 
   <img src="./assets/time.png" alt="image-20250211000441795" style="zoom:50%;" />
 
-**How to train**
+**Data Preparation**
 
-- prepare the dataset follow the **local_scripts/gen_dataset.py**
+- Modify necessary input/output paths in **local_scripts/train_qwen2_5_3b.sh**
+- Prepare the dataset using **local_scripts/gen_dataset.py**(unlike [Open-R1-Multimodal](https://github.com/EvolvingLMMs-Lab/open-r1-multimodal) that directly store the image in PIL format, we store image path(url or local path) to enable vLLM support)
+
+**Training**
+
 - sh local_scripts/train_qwen2_5_3b.sh
   - The default setting for vLLM uses `cuda:7` for generation while utilizing the remaining 7 nodes for training.
+
+**Evaluation**
+
+- run **python eval/evaluate_mathvista.py --checkpoint ${CHECKPOINT} --datasets MathVista_testmini** to evaluate your ckpt on MathVista_testmini.
 
 **Acknowledgement**
 
