@@ -2,7 +2,7 @@
 
 **Environment**
 
-- Follow the instruction in https://github.com/FanqingM/R1-Multimodel-Journey
+- Follow the instruction in https://github.com/FanqingM/R1-Multimodal-Journey
 - Update the transformers to the 4.49.0.dev0 to support the Qwen2.5_VL
 - `pip install vllm == 0.7.2 trl == 0.15.0.dev0` to support vLLM
 
