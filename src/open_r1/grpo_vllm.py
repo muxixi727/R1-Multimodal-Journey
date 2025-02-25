@@ -128,7 +128,7 @@ def main(script_args, training_args, model_args):
     reward_funcs = [reward_funcs_registry[func] for func in script_args.reward_funcs]
 
     # Load the dataset
-    dataset = load_dataset(script_args.dataset_name, name=script_args.dataset_config)
+    dataset = load_dataset(script_args.dataset_name, data_files=script_args.dataset_config)
 
     # Format into conversation
     def make_conversation(example):
@@ -159,7 +159,7 @@ def main(script_args, training_args, model_args):
         dataset = dataset.map(make_conversation)
         dataset = dataset.remove_columns("messages")
 
-    if "Qwen" in model_args.model_name_or_path or "Aria" in model_args.model_name_or_path:
+    if "Qwen" in model_args.model_name_or_path or "Aria" in model_args.model_name_or_path or "qwen" in model_args.model_name_or_path:
         trainer_cls = Qwen2VLGRPOTrainer
     else:
         trainer_cls = GRPOTrainer
